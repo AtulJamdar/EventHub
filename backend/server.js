@@ -17,6 +17,7 @@ app.use(express.urlencoded({ extended: true }));
 const authRoutes = require('./routes/auth');
 const eventRoutes = require('./routes/events');
 const bookingRoutes = require('./routes/bookings');
+const analyticsRoutes = require('./routes/analytics');
 
 // Test Route
 app.get('/api/test', (req, res) => {
@@ -31,6 +32,7 @@ app.get('/api/test', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/bookings', bookingRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 // Basic error handling middleware
 app.use((err, req, res, next) => {
