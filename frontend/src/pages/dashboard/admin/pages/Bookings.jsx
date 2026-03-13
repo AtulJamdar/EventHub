@@ -101,8 +101,8 @@ export default function Bookings() {
   };
 
   const filteredBookings = bookings.filter(booking =>
-    booking.userId.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    booking.eventId.title.toLowerCase().includes(searchTerm.toLowerCase())
+    booking.userId?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    booking.eventId?.title?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -177,8 +177,8 @@ export default function Bookings() {
               >
                 {(item) => (
                   <TableRow key={item._id}>
-                    <TableCell>{item.userId.name}</TableCell>
-                    <TableCell>{item.eventId.title}</TableCell>
+                    <TableCell>{item.userId?.name}</TableCell>
+                    <TableCell>{item.eventId?.title}</TableCell>
                     <TableCell>{item.tickets}</TableCell>
                     <TableCell>${item.totalPrice}</TableCell>
                     <TableCell>
@@ -236,7 +236,7 @@ export default function Bookings() {
           <ModalHeader className="text-white">Reject Booking</ModalHeader>
           <ModalBody className="space-y-4">
             <p className="text-gray-300">
-              Are you sure you want to reject this booking from <span className="font-semibold">{selectedBooking?.userId.name}</span>?
+              Are you sure you want to reject this booking from <span className="font-semibold">{selectedBooking?.userId?.name || "this user"}</span>?
             </p>
             <Textarea
               label="Rejection Reason"
