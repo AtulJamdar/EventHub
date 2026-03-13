@@ -18,6 +18,7 @@ const authRoutes = require('./routes/auth');
 const eventRoutes = require('./routes/events');
 const bookingRoutes = require('./routes/bookings');
 const analyticsRoutes = require('./routes/analytics');
+const reportRoutes = require('./routes/reports');
 
 // Test Route
 app.get('/api/test', (req, res) => {
@@ -33,6 +34,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/reports', reportRoutes);
 
 // Basic error handling middleware
 app.use((err, req, res, next) => {
