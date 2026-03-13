@@ -1,0 +1,30 @@
+/* 1. Use ONLY the v4 import at the very top */
+
+@import "tailwindcss";
+
+/* 2. Map your external library sources */
+
+@source "../node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}";
+
+/* 3. Define your custom theme variables */
+
+@theme {
+    --color-primary: #3b82f6;
+    --color-secondary: #8b5cf6;
+    --color-dark: #1f2937;
+}
+
+
+/* 4. Your custom global styles */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Source Sans Pro', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
