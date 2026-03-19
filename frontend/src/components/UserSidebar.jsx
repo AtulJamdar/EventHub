@@ -2,12 +2,9 @@ import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button, Tooltip, Divider } from '@heroui/react';
 import {
-  FaHouse,
+  FaGaugeHigh,
   FaCalendarDays,
   FaClipboardList,
-  FaChartLine,
-  FaFileLines,
-  FaUsers,
   FaBars,
   FaXmark,
   FaRightFromBracket,
@@ -16,7 +13,7 @@ import {
 } from 'react-icons/fa6';
 import { useAuthStore } from '../store/authStore';
 
-export default function AdminSidebar() {
+export default function UserSidebar() {
   const navigate = useNavigate();
   const location = useLocation();
   const { logout, user } = useAuthStore();
@@ -24,12 +21,9 @@ export default function AdminSidebar() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const menuItems = [
-    { icon: FaHouse, label: 'Dashboard', path: '/admin/dashboard' },
-    { icon: FaCalendarDays, label: 'Events', path: '/admin/events' },
-    { icon: FaClipboardList, label: 'Bookings', path: '/admin/bookings' },
-    { icon: FaChartLine, label: 'Analytics', path: '/admin/analytics' },
-    { icon: FaFileLines, label: 'Reports', path: '/admin/reports' },
-    { icon: FaUsers, label: 'Users', path: '/admin/users' }
+    { icon: FaGaugeHigh, label: 'Dashboard', path: '/dashboard' },
+    { icon: FaCalendarDays, label: 'Browse Events', path: '/events' },
+    { icon: FaClipboardList, label: 'My Bookings', path: '/dashboard/my-bookings' },
   ];
 
   const isActive = (path) => location.pathname === path;
@@ -75,25 +69,25 @@ export default function AdminSidebar() {
           </div>
         </div>
 
-        {/* 2. Identity Section (Boxed for Admin) */}
+        {/* 2. User Identity Section */}
         <div className={`px-6 mb-10 transition-all ${!sidebarOpen && 'flex justify-center'}`}>
           <div className={`flex items-center gap-4 p-3 rounded-2xl ${sidebarOpen ? 'bg-white/5 border border-white/5' : ''}`}>
             <div className="relative">
               <div className="w-10 h-10 rounded-full bg-slate-800 border border-white/10 flex items-center justify-center flex-shrink-0 font-bold text-white text-sm">
                 {user?.name?.charAt(0).toUpperCase()}
               </div>
-              <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-blue-500 border-2 border-[#111119] rounded-full"></div>
+              <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-[#111119] rounded-full"></div>
             </div>
             {sidebarOpen && (
               <div className="min-w-0 overflow-hidden">
                 <p className="text-white font-bold text-xs truncate uppercase tracking-widest">{user?.name}</p>
-                <p className="text-purple-400 text-[10px] font-black uppercase tracking-tighter">Admin Panel</p>
+                <p className="text-slate-500 text-[10px] font-bold">Standard Member</p>
               </div>
             )}
           </div>
         </div>
 
-        {/* 3. Navigation (Interactive Gradient Hover) */}
+        {/* 3. Navigation (Interactive Hover) */}
         <nav className="flex-1 px-4 space-y-2">
           {menuItems.map((item) => {
             const Icon = item.icon;
@@ -115,7 +109,7 @@ export default function AdminSidebar() {
                       : 'text-slate-500 hover:text-white hover:bg-white/5 border border-transparent'
                   }`}
                 >
-                  <Icon size={20} className={`flex-shrink-0 ${active ? 'scale-110' : 'group-hover:scale-110 transition-transform'}`} />
+                  <Icon size={20} className={`flex-shrink-0 group-hover:scale-110 transition-transform ${active ? 'scale-110' : ''}`} />
                   {sidebarOpen && <span className="text-sm font-bold tracking-tight">{item.label}</span>}
                 </button>
               </Tooltip>
@@ -123,7 +117,7 @@ export default function AdminSidebar() {
           })}
         </nav>
 
-        {/* 4. Bottom Area (Ghost Logout) */}
+        {/* 4. Bottom Area (Ghost Logout & Toggle) */}
         <div className="px-4 mt-auto space-y-6">
           <Divider className="bg-white/5" />
           

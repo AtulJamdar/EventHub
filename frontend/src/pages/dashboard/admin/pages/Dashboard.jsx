@@ -1,6 +1,14 @@
 import { useState, useEffect } from 'react';
-import { Card, CardBody, Spinner } from '@heroui/react';
-import { FaCalendarDays, FaClipboardList, FaUsers, FaChartLine } from 'react-icons/fa6';
+import { Card, CardBody, Spinner, Progress, Button, Divider } from '@heroui/react';
+import { 
+  FaCalendarDays, 
+  FaClipboardList, 
+  FaUsers, 
+  FaChartLine, 
+  FaCrown, 
+  FaRankingStar,
+  FaArrowTrendUp 
+} from 'react-icons/fa6';
 import api from '../../../../config/api';
 
 export default function Dashboard() {
@@ -23,17 +31,22 @@ export default function Dashboard() {
     }
   };
 
-  const StatCard = ({ icon: Icon, title, value, color, subtitle }) => (
-    <Card className="bg-white/10 backdrop-blur-md border border-white/20 hover:border-blue-400/50 transition-all">
-      <CardBody className="p-6 space-y-4">
-        <div className="flex items-start justify-between">
-          <div>
-            <p className="text-gray-400 text-sm font-medium">{title}</p>
-            <h3 className="text-4xl font-bold text-white mt-2">{value || '0'}</h3>
-            {subtitle && <p className="text-gray-400 text-xs mt-1">{subtitle}</p>}
+  const StatCard = ({ icon: Icon, title, value, gradient }) => (
+    /* Removed 'hover:-translate-y-1' and scroll-like transitions */
+    <Card className="bg-[#111119] border border-white/5 transition-colors duration-300 group">
+      <CardBody className="p-8 relative overflow-hidden">
+        {/* Static Glow instead of moving effect */}
+        <div className={`absolute -right-2 -top-2 w-20 h-20 rounded-full blur-3xl opacity-10 ${gradient}`} />
+        
+        <div className="flex items-center gap-6">
+          <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-2xl text-white shadow-lg ${gradient}`}>
+            <Icon />
           </div>
-          <div className={`p-4 rounded-lg ${color}`}>
-            <Icon className="text-2xl text-white" />
+          <div className="space-y-1">
+            <p className="text-slate-500 text-xs font-black uppercase tracking-[0.2em]">{title}</p>
+            <h3 className="text-3xl font-black text-white tracking-tighter">
+              {value || '0'}
+            </h3>
           </div>
         </div>
       </CardBody>
@@ -42,163 +55,159 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <Spinner size="lg" color="current" />
+      <div className="min-h-screen bg-[#050505] flex flex-col items-center justify-center gap-4">
+        <Spinner size="lg" color="primary" />
+        <p className="text-slate-600 font-bold uppercase tracking-[0.3em] text-[10px]">Syncing Core Data...</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <div>
-        <h1 className="text-4xl font-bold text-white mb-2">Dashboard</h1>
-        <p className="text-gray-400">Welcome back! Here's your event management overview</p>
-      </div>
-
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard
-          icon={FaCalendarDays}
-          title="Total Events"
-          value={stats?.totalEvents}
-          color="bg-blue-600"
-          subtitle="Active events"
-        />
-        <StatCard
-          icon={FaClipboardList}
-          title="Total Bookings"
-          value={stats?.totalBookings}
-          color="bg-purple-600"
-          subtitle="All bookings"
-        />
-        <StatCard
-          icon={FaUsers}
-          title="Total Users"
-          value={stats?.totalUsers}
-          color="bg-pink-600"
-          subtitle="Registered users"
-        />
-        <StatCard
-          icon={FaChartLine}
-          title="Total Revenue"
-          value={`$${stats?.totalRevenue?.toLocaleString()}`}
-          color="bg-green-600"
-          subtitle="From approved bookings"
-        />
-      </div>
-
-      {/* Booking Status Summary */}
-      <Card className="bg-white/10 backdrop-blur-md border border-white/20">
-        <CardBody className="p-8 space-y-6">
-          <h2 className="text-2xl font-bold text-white">Booking Status Summary</h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-gradient-to-br from-yellow-500/20 to-yellow-600/20 rounded-lg p-6 border border-yellow-400/30">
-              <p className="text-yellow-200 text-sm font-medium mb-2">Pending Approvals</p>
-              <p className="text-3xl font-bold text-yellow-300">
-                {stats?.bookingStatusSummary?.pending || 0}
-              </p>
-            </div>
-
-            <div className="bg-gradient-to-br from-green-500/20 to-green-600/20 rounded-lg p-6 border border-green-400/30">
-              <p className="text-green-200 text-sm font-medium mb-2">Approved</p>
-              <p className="text-3xl font-bold text-green-300">
-                {stats?.bookingStatusSummary?.approved || 0}
-              </p>
-            </div>
-
-            <div className="bg-gradient-to-br from-red-500/20 to-red-600/20 rounded-lg p-6 border border-red-400/30">
-              <p className="text-red-200 text-sm font-medium mb-2">Rejected</p>
-              <p className="text-3xl font-bold text-red-300">
-                {stats?.bookingStatusSummary?.rejected || 0}
-              </p>
-            </div>
+    <div className="min-h-screen bg-[#050505] text-white">
+      
+      {/* MAIN GRID LAYOUT */}
+      <div className="grid grid-cols-12 gap-6 p-6 lg:p-10">
+  
+        {/* HEADER (FULL WIDTH) */}
+        <div className="col-span-12 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 border-b border-white/5 pb-6">
+          <div>
+            <p className="text-blue-500 text-xs font-black uppercase tracking-[0.4em]">
+              Live Performance
+            </p>
+            <h1 className="text-4xl lg:text-5xl font-black tracking-tight">
+              System <span className="text-blue-500">Overview</span>
+            </h1>
+            <p className="text-slate-500 mt-2">
+              Real-time analytics of your platform
+            </p>
           </div>
-        </CardBody>
-      </Card>
-
-      {/* Events by Category */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="bg-white/10 backdrop-blur-md border border-white/20">
-          <CardBody className="p-8 space-y-6">
-            <h3 className="text-xl font-bold text-white">Events by Category</h3>
-
-            <div className="space-y-3">
-              {stats?.eventsByCategory?.map((category, index) => (
-                <div key={index} className="flex items-center justify-between">
-                  <span className="text-gray-300">{category._id}</span>
-                  <div className="flex items-center gap-3">
-                    <div className="w-32 h-2 bg-white/10 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-gradient-to-r from-blue-500 to-purple-600"
-                        style={{
-                          width: `${(category.count / Math.max(...stats.eventsByCategory.map(c => c.count))) * 100}%`
-                        }}
-                      ></div>
-                    </div>
-                    <span className="text-blue-400 font-semibold w-8 text-right">{category.count}</span>
+  
+          <Button
+            onClick={fetchDashboardStats}
+            className="bg-white/5 border border-white/10 px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-blue-600"
+          >
+            Refresh
+          </Button>
+        </div>
+  
+        {/* STATS (FULL WIDTH RESPONSIVE) */}
+        <div className="col-span-12 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+          <StatCard
+            icon={FaCalendarDays}
+            title="Total Events"
+            value={stats?.totalEvents}
+            gradient="bg-gradient-to-br from-blue-600 to-blue-400"
+          />
+          <StatCard
+            icon={FaClipboardList}
+            title="Total Bookings"
+            value={stats?.totalBookings}
+            gradient="bg-gradient-to-br from-purple-600 to-purple-400"
+          />
+          <StatCard
+            icon={FaUsers}
+            title="Users"
+            value={stats?.totalUsers}
+            gradient="bg-gradient-to-br from-indigo-600 to-indigo-400"
+          />
+          <StatCard
+            icon={FaChartLine}
+            title="Revenue"
+            value={`$${stats?.totalRevenue?.toLocaleString()}`}
+            gradient="bg-gradient-to-br from-emerald-600 to-emerald-400"
+          />
+        </div>
+  
+        {/* LEFT BIG SECTION */}
+        <div className="col-span-12 xl:col-span-8">
+          <Card className="h-full bg-[#111119] border border-white/5 rounded-3xl">
+            <CardBody className="p-8 space-y-8">
+  
+              <h2 className="text-2xl font-black">Transaction Health</h2>
+  
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {[
+                  { label: 'Pending', val: stats?.bookingStatusSummary?.pending, color: 'text-yellow-500' },
+                  { label: 'Approved', val: stats?.bookingStatusSummary?.approved, color: 'text-green-500' },
+                  { label: 'Rejected', val: stats?.bookingStatusSummary?.rejected, color: 'text-red-500' }
+                ].map((item, i) => (
+                  <div key={i} className="bg-white/5 rounded-2xl p-6 text-center">
+                    <p className={`text-xs uppercase ${item.color}`}>{item.label}</p>
+                    <p className="text-4xl font-black mt-2">{item.val || 0}</p>
                   </div>
+                ))}
+              </div>
+  
+              {/* PROGRESS */}
+              <div>
+                <div className="flex justify-between mb-2 text-sm">
+                  <span className="text-slate-400">Approval Rate</span>
+                  <span className="font-bold">
+                    {stats?.totalBookings > 0
+                      ? ((stats.bookingStatusSummary.approved / stats.totalBookings) * 100).toFixed(1)
+                      : 0}%
+                  </span>
+                </div>
+  
+                <Progress
+                  value={
+                    stats?.totalBookings > 0
+                      ? (stats.bookingStatusSummary.approved / stats.totalBookings) * 100
+                      : 0
+                  }
+                  className="h-3"
+                />
+              </div>
+  
+            </CardBody>
+          </Card>
+        </div>
+  
+        {/* RIGHT PANEL */}
+        <div className="col-span-12 xl:col-span-4 flex flex-col gap-6">
+  
+          {/* TOP EVENTS */}
+          <Card className="bg-[#111119] border border-white/5 rounded-3xl">
+            <CardBody className="p-6 space-y-4">
+              <h3 className="font-black text-lg">Top Events</h3>
+  
+              {stats?.topEvents?.slice(0, 5).map((event, i) => (
+                <div key={i} className="flex justify-between bg-white/5 p-4 rounded-xl">
+                  <div>
+                    <p className="font-bold text-sm">{event.eventName}</p>
+                    <p className="text-xs text-slate-500">{event.bookings} bookings</p>
+                  </div>
+                  <span className="text-blue-500 font-bold">#{i + 1}</span>
                 </div>
               ))}
-            </div>
-          </CardBody>
-        </Card>
-
-        {/* Top Events */}
-        <Card className="bg-white/10 backdrop-blur-md border border-white/20">
-          <CardBody className="p-8 space-y-6">
-            <h3 className="text-xl font-bold text-white">Top Events</h3>
-
-            <div className="space-y-3">
-              {stats?.topEvents?.map((event, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between p-3 bg-white/5 rounded-lg hover:bg-white/10 transition-colors"
-                >
-                  <div className="min-w-0">
-                    <p className="text-white font-medium truncate">{event.eventName}</p>
-                    <p className="text-gray-400 text-xs">{event.bookings} bookings</p>
+            </CardBody>
+          </Card>
+  
+          {/* CATEGORY */}
+          <Card className="bg-[#111119] border border-white/5 rounded-3xl flex-1">
+            <CardBody className="p-6 space-y-4">
+              <h3 className="font-black text-lg">Category Distribution</h3>
+  
+              {stats?.eventsByCategory?.map((c, i) => (
+                <div key={i}>
+                  <div className="flex justify-between text-xs mb-1">
+                    <span>{c._id}</span>
+                    <span>{c.count}</span>
                   </div>
-                  <div className="text-right flex-shrink-0 ml-4">
-                    <p className="text-blue-400 font-bold">{event.bookings}</p>
-                  </div>
+                  <Progress value={(c.count / 10) * 100} />
                 </div>
               ))}
-            </div>
-          </CardBody>
-        </Card>
+            </CardBody>
+          </Card>
+  
+        </div>
+  
+        {/* FOOTER */}
+        <div className="col-span-12 text-center text-xs text-slate-700 pt-4">
+          SYSTEM CORE • BUILD 1.0.4
+        </div>
+  
       </div>
-
-      {/* Quick Actions */}
-      <Card className="bg-white/10 backdrop-blur-md border border-white/20">
-        <CardBody className="p-8">
-          <h3 className="text-xl font-bold text-white mb-6">Quick Stats</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
-            <div>
-              <p className="text-gray-400 text-sm mb-2">Avg Revenue per Booking</p>
-              <p className="text-2xl font-bold text-green-400">
-                ${stats?.totalBookings > 0 ? (stats.totalRevenue / stats.totalBookings).toFixed(2) : '0.00'}
-              </p>
-            </div>
-            <div>
-              <p className="text-gray-400 text-sm mb-2">Booking Approval Rate</p>
-              <p className="text-2xl font-bold text-blue-400">
-                {stats?.totalBookings > 0
-                  ? ((stats.bookingStatusSummary.approved / stats.totalBookings) * 100).toFixed(1)
-                  : '0'}
-                %
-              </p>
-            </div>
-            <div>
-              <p className="text-gray-400 text-sm mb-2">Avg Users per Event</p>
-              <p className="text-2xl font-bold text-purple-400">
-                {stats?.totalEvents > 0 ? (stats.totalUsers / stats.totalEvents).toFixed(1) : '0'}
-              </p>
-            </div>
-          </div>
-        </CardBody>
-      </Card>
     </div>
   );
 }

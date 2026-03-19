@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Input, Button, Card, CardBody, Spinner } from '@heroui/react';
-import { FaEnvelope, FaLock, FaArrowRight } from 'react-icons/fa6';
+import { FaEnvelope, FaLock, FaArrowRight, FaStar } from 'react-icons/fa6';
 import api from '../config/api';
 import { useAuthStore } from '../store/authStore';
 import Navbar from '../components/Navbar';
@@ -20,202 +20,159 @@ export default function Login() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-    // Clear error for this field
-    if (errors[name]) {
-      setErrors(prev => ({
-        ...prev,
-        [name]: ''
-      }));
-    }
+    setFormData(prev => ({ ...prev, [name]: value }));
+    if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }));
   };
 
   const validateForm = () => {
     const newErrors = {};
-
-    if (!formData.email.trim()) {
-      newErrors.email = 'Email is required';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email';
-    }
-
-    if (!formData.password) {
-      newErrors.password = 'Password is required';
-    } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
-    }
-
+    if (!formData.email.trim()) newErrors.email = 'Required';
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) newErrors.email = 'Invalid email';
+    if (!formData.password) newErrors.password = 'Required';
     return newErrors;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setGeneralError('');
-    
     const newErrors = validateForm();
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
-
     setLoading(true);
-
     try {
       const response = await api.post('/auth/login', {
         email: formData.email,
         password: formData.password
       });
-
       if (response.data.success) {
         const { token, user } = response.data;
         login(user, token);
-
-        // Redirect based on role
-        if (user.role === 'admin') {
-          navigate('/admin/dashboard');
-        } else {
-          navigate('/dashboard');
-        }
+        user.role === 'admin' ? navigate('/admin/dashboard') : navigate('/dashboard');
       }
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Login failed. Please try again.';
-      setGeneralError(errorMessage);
-      console.error('Login error:', error);
+      setGeneralError(error.response?.data?.message || 'Login failed.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex flex-col">
+    <div className="min-h-screen bg-[#0a0a0f] text-slate-200 flex flex-col font-sans selection:bg-blue-600/30">
       <Navbar />
 
-      <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-12">
-        <div className="w-full max-w-md">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-white mb-2">Welcome Back</h1>
-            <p className="text-gray-400">Sign in to your account to continue</p>
-          </div>
+      <main className="flex-1 relative flex items-center justify-center px-4 py-20">
+        {/* Background Decorative Glow */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-600/5 rounded-full blur-[120px]" />
+        </div>
 
-          {/* Card */}
-          <Card className="bg-white/10 backdrop-blur-md border border-white/20">
-            <CardBody className="gap-6 p-8">
-              {/* General Error Message */}
+        <div className="relative z-10 w-full max-w-[440px] animate-fade-in">
+          {/* Card Wrapper */}
+          <Card className="bg-slate-900/40 backdrop-blur-xl border border-slate-800 rounded-3xl shadow-2xl">
+            <CardBody className="p-10 space-y-8">
+              
+              {/* Branding & Header */}
+              <div className="text-center space-y-3">
+                <div className="flex justify-center mb-4">
+                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+                    <span className="text-white font-black text-xl">E</span>
+                  </div>
+                </div>
+                <h1 className="text-3xl font-black text-white tracking-tight uppercase">Sign In</h1>
+                <p className="text-slate-500 text-sm font-medium">Continue to your EventHub account</p>
+              </div>
+
               {generalError && (
-                <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-4 text-red-200 text-sm">
+                <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 text-red-400 text-xs font-bold text-center italic">
                   {generalError}
                 </div>
               )}
 
               <form onSubmit={handleSubmit} className="space-y-5">
-                {/* Email Input */}
-                <div>
-                  <Input
-                    type="email"
-                    name="email"
-                    placeholder="Enter your email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    startContent={<FaEnvelope className="text-gray-400" />}
-                    classNames={{
-                      input: "bg-white/10 text-white placeholder-gray-400",
-                      inputWrapper: "bg-white/10 border border-white/20 hover:border-blue-400/50",
-                    }}
-                    isInvalid={!!errors.email}
-                    errorMessage={errors.email}
-                  />
-                </div>
+                <Input
+                  type="email"
+                  name="email"
+                  label="Email"
+                  placeholder="name@company.com"
+                  labelPlacement="outside"
+                  value={formData.email}
+                  onChange={handleChange}
+                  classNames={{
+                    label: "text-slate-400 font-bold text-xs uppercase tracking-widest",
+                    input: "text-white font-semibold placeholder-slate-600",
+                    inputWrapper: "bg-black/20 border-slate-800 hover:border-blue-500/50 h-14 rounded-xl border-2 transition-all shadow-inner",
+                  }}
+                  isInvalid={!!errors.email}
+                  errorMessage={errors.email}
+                />
 
-                {/* Password Input */}
-                <div>
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center px-1">
+                    <label className="text-slate-400 font-bold text-xs uppercase tracking-widest">Password</label>
+                    <a href="#" className="text-blue-500 hover:text-blue-400 text-[10px] font-black uppercase tracking-tighter">Forgot?</a>
+                  </div>
                   <Input
                     type="password"
                     name="password"
-                    placeholder="Enter your password"
+                    placeholder="••••••••"
                     value={formData.password}
                     onChange={handleChange}
-                    startContent={<FaLock className="text-gray-400" />}
                     classNames={{
-                      input: "bg-white/10 text-white placeholder-gray-400",
-                      inputWrapper: "bg-white/10 border border-white/20 hover:border-blue-400/50",
+                      input: "text-white font-semibold placeholder-slate-600",
+                      inputWrapper: "bg-black/20 border-slate-800 hover:border-blue-500/50 h-14 rounded-xl border-2 transition-all shadow-inner",
                     }}
                     isInvalid={!!errors.password}
                     errorMessage={errors.password}
                   />
                 </div>
 
-                {/* Remember Me & Forgot Password */}
-                <div className="flex items-center justify-between text-sm">
-                  <label className="flex items-center gap-2 text-gray-300 cursor-pointer hover:text-white transition-colors">
-                    <input type="checkbox" className="rounded border-gray-400" />
-                    Remember me
-                  </label>
-                  <a href="#" className="text-blue-400 hover:text-blue-300 transition-colors">
-                    Forgot password?
-                  </a>
+                <div className="flex items-center gap-3 px-1 pt-1">
+                  <input type="checkbox" className="w-4 h-4 rounded bg-slate-800 border-slate-700 text-blue-600 focus:ring-blue-500" id="remember" />
+                  <label htmlFor="remember" className="text-slate-500 text-xs font-bold cursor-pointer hover:text-slate-300 transition-colors">Remember this device</label>
                 </div>
 
-                {/* Submit Button */}
                 <Button
                   fullWidth
                   type="submit"
                   disabled={loading}
-                  className="bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold py-3 rounded-lg hover:shadow-lg transition-all"
+                  className="bg-gradient-to-r from-blue-600 to-purple-600 text-white font-black h-14 rounded-xl text-lg shadow-xl hover:shadow-blue-500/20 transition-all hover:-translate-y-0.5"
                 >
-                  {loading ? (
-                    <>
-                      <Spinner size="sm" color="current" />
-                      Signing in...
-                    </>
-                  ) : (
-                    <>
-                      Sign In
-                      <FaArrowRight />
-                    </>
-                  )}
+                  {loading ? <Spinner size="sm" color="white" /> : "Sign In"}
                 </Button>
               </form>
 
-              {/* Divider */}
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-white/20"></div>
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-slate-900 text-gray-400">or</span>
+              {/* Bottom Navigation */}
+              <div className="space-y-6 pt-4 text-center">
+                <p className="text-slate-500 text-sm font-medium">
+                  Don't have an account?{' '}
+                  <Link to="/register" className="text-white font-bold hover:text-blue-400 transition-colors ml-1 border-b border-white/20">
+                    Sign up
+                  </Link>
+                </p>
+
+                {/* Demo Credentials Section */}
+                <div className="pt-6 border-t border-slate-800/50">
+                   <div className="bg-blue-500/5 rounded-2xl p-4 border border-blue-500/10">
+                    <p className="text-blue-500/70 text-[9px] font-black uppercase tracking-[0.2em] mb-2 text-center">Development Access</p>
+                    <div className="grid grid-cols-1 gap-1 text-[11px] text-slate-500 font-bold">
+                      <p>User: <span className="text-slate-400">john@example.com</span></p>
+                      <p>Admin: <span className="text-slate-400">admin@example.com</span></p>
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              {/* Sign Up Link */}
-              <p className="text-center text-gray-300 text-sm">
-                Don't have an account?{' '}
-                <Link
-                  to="/register"
-                  className="text-blue-400 font-semibold hover:text-blue-300 transition-colors"
-                >
-                  Sign up here
-                </Link>
-              </p>
-
-              {/* Demo Account Info */}
-              <div className="bg-blue-500/10 border border-blue-400/30 rounded-lg p-4">
-                <p className="text-blue-300 text-xs font-semibold mb-2">Demo Credentials:</p>
-                <p className="text-blue-200 text-xs">User: john@example.com / password123</p>
-                <p className="text-blue-200 text-xs">Admin: admin@example.com / adminpass123</p>
-              </div>
             </CardBody>
           </Card>
 
-          {/* Footer Text */}
-          <div className="mt-8 text-center text-gray-400 text-sm">
-            <p>By signing in, you agree to our Terms & Conditions</p>
+          {/* Minimal Footer Info */}
+          <div className="mt-8 text-center text-[10px] text-slate-600 font-black uppercase tracking-[0.3em] opacity-50">
+            Secure Cloud Authentication • EventHub v2.0
           </div>
         </div>
-      </div>
+      </main>
 
       <Footer />
     </div>

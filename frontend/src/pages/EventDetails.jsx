@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Button, Card, CardBody, Input, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Spinner } from '@heroui/react';
-import { FaCalendarDays, FaMapPin, FaClock, FaUsers, FaArrowLeft, FaTicket } from 'react-icons/fa6';
+import { Button, Card, CardBody, Input, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Spinner, Divider } from '@heroui/react';
+import { FaCalendarDays, FaMapPin, FaClock, FaUsers, FaArrowLeft, FaTicket, FaCircleCheck, FaUserTie, FaShieldHeart } from 'react-icons/fa6';
 import api from '../config/api';
 import { useAuthStore } from '../store/authStore';
-import Navbar from '../components/Navbar';
-import Footer from '../components/Footer';
+import UserSidebar from '../components/UserSidebar';
 
 export default function EventDetails() {
   const { id } = useParams();
@@ -36,38 +35,24 @@ export default function EventDetails() {
   };
 
   const handleBookEvent = async () => {
-    if (!isAuthenticated) {
-      navigate('/login');
-      return;
-    }
-
+    if (!isAuthenticated) { navigate('/login'); return; }
     setBookingError('');
     setBookingSuccess('');
-
-    if (!bookingData.tickets || bookingData.tickets < 1) {
-      setBookingError('Please select at least 1 ticket');
-      return;
-    }
-
     setBookingLoading(true);
-
     try {
       const response = await api.post('/bookings', {
         eventId: id,
         tickets: parseInt(bookingData.tickets)
       });
-
       if (response.data.success) {
-        setBookingSuccess('Booking created successfully! Waiting for admin approval.');
-        setBookingData({ tickets: 1 });
+        setBookingSuccess('Booking confirmed!');
         setTimeout(() => {
           setBookingModalOpen(false);
           navigate('/dashboard');
-        }, 2000);
+        }, 1500);
       }
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Booking failed. Please try again.';
-      setBookingError(errorMessage);
+      setBookingError(error.response?.data?.message || 'Booking failed.');
     } finally {
       setBookingLoading(false);
     }
@@ -75,32 +60,8 @@ export default function EventDetails() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex flex-col">
-        <Navbar />
-        <div className="flex-1 flex items-center justify-center">
-          <Spinner size="lg" color="current" />
-        </div>
-        <Footer />
-      </div>
-    );
-  }
-
-  if (!event) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex flex-col">
-        <Navbar />
-        <div className="flex-1 flex items-center justify-center">
-          <div className="text-center">
-            <p className="text-white text-lg mb-4">Event not found</p>
-            <Button
-              className="bg-blue-600 hover:bg-blue-700 text-white"
-              onClick={() => navigate('/events')}
-            >
-              Back to Events
-            </Button>
-          </div>
-        </div>
-        <Footer />
+      <div className="min-h-screen bg-[#050505] flex items-center justify-center">
+        <Spinner color="primary" />
       </div>
     );
   }
@@ -109,229 +70,150 @@ export default function EventDetails() {
   const isPastEvent = eventDate < new Date();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex flex-col">
-      <Navbar />
+    <div className="min-h-screen bg-[#050505] flex">
+      <UserSidebar />
 
-      <div className="flex-1 px-4 sm:px-6 lg:px-8 py-12">
-        <div className="max-w-4xl mx-auto">
-          {/* Back Button */}
-          <Button
-            isIconOnly
-            variant="light"
-            className="text-white mb-8 hover:bg-white/10"
-            onClick={() => navigate('/events')}
-          >
-            <FaArrowLeft size={20} />
-          </Button>
-
-          {/* Event Header */}
-          <div className="mb-8">
-            <div className="inline-block bg-blue-500/30 text-blue-300 text-sm font-semibold px-4 py-2 rounded-full mb-4">
-              {event.category}
+      <div className="flex-1 lg:ml-72 lg:mr-72 transition-all duration-300">
+        <main className="p-6 md:p-8 space-y-8 animate-fade-in max-w-[1200px] mx-auto">
+          
+          {/* --- TOP BAR --- */}
+          <div className="flex items-center justify-between">
+            <Button
+              size="sm"
+              variant="flat"
+              className="bg-white/5 text-slate-400 font-bold rounded-lg"
+              onClick={() => navigate('/events')}
+              startContent={<FaArrowLeft />}
+            >
+              Back
+            </Button>
+            <div className="flex items-center gap-2 text-slate-600 text-[9px] font-black uppercase tracking-[0.2em]">
+               <FaShieldHeart className="text-blue-500" /> Secure Encryption
             </div>
-            <h1 className="text-5xl font-bold text-white mb-4">{event.title}</h1>
-            <p className="text-xl text-gray-300">{event.description}</p>
           </div>
 
-          {/* Image */}
-          <div className="w-full h-96 rounded-2xl overflow-hidden mb-8 border border-white/20">
-            <img
-              src={event.image}
-              alt={event.title}
-              className="w-full h-full object-cover"
-            />
-          </div>
+          {/* --- COMPACT HERO --- */}
+          <section className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            <div className="lg:col-span-8 space-y-6">
+              <div className="space-y-3">
+                <span className="text-blue-500 text-[10px] font-black uppercase tracking-widest">{event.category}</span>
+                <h1 className="text-3xl md:text-5xl font-black text-white tracking-tighter uppercase italic leading-tight">
+                  {event.title}
+                </h1>
+              </div>
 
-          {/* Content Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Left Column - Details */}
-            <div className="lg:col-span-2 space-y-8">
-              {/* Event Information */}
-              <Card className="bg-white/10 backdrop-blur-md border border-white/20">
-                <CardBody className="p-8 space-y-6">
-                  <h2 className="text-2xl font-bold text-white">Event Information</h2>
+              <div className="w-full h-[320px] rounded-[2rem] overflow-hidden border border-white/5 shadow-2xl relative">
+                <img src={event.image} alt={event.title} className="w-full h-full object-cover brightness-90" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+              </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="flex items-start gap-4">
-                      <div className="w-12 h-12 bg-blue-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <FaCalendarDays className="text-blue-400 text-xl" />
-                      </div>
-                      <div>
-                        <p className="text-gray-400 text-sm">Date</p>
-                        <p className="text-white font-semibold">
-                          {eventDate.toLocaleDateString('en-US', {
-                            weekday: 'long',
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric'
-                          })}
-                        </p>
-                      </div>
-                    </div>
+              <div className="space-y-4">
+                <h2 className="text-lg font-black text-white uppercase tracking-tight">Overview</h2>
+                <p className="text-slate-400 text-sm leading-relaxed font-medium">
+                  {event.description}
+                </p>
+              </div>
+            </div>
 
-                    <div className="flex items-start gap-4">
-                      <div className="w-12 h-12 bg-purple-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <FaClock className="text-purple-400 text-xl" />
-                      </div>
-                      <div>
-                        <p className="text-gray-400 text-sm">Time</p>
-                        <p className="text-white font-semibold">{event.time}</p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-start gap-4">
-                      <div className="w-12 h-12 bg-pink-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <FaMapPin className="text-pink-400 text-xl" />
-                      </div>
-                      <div>
-                        <p className="text-gray-400 text-sm">Location</p>
-                        <p className="text-white font-semibold">{event.location}</p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-start gap-4">
-                      <div className="w-12 h-12 bg-green-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <FaUsers className="text-green-400 text-xl" />
-                      </div>
-                      <div>
-                        <p className="text-gray-400 text-sm">Max Participants</p>
-                        <p className="text-white font-semibold">{event.maxParticipants}</p>
-                      </div>
-                    </div>
-                  </div>
-                </CardBody>
-              </Card>
-
-              {/* Organizer */}
-              <Card className="bg-white/10 backdrop-blur-md border border-white/20">
-                <CardBody className="p-8 space-y-4">
-                  <h3 className="text-xl font-bold text-white">Organized By</h3>
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                      <span className="text-white font-bold">
-                        {event.createdBy.name.charAt(0)}
-                      </span>
-                    </div>
+            {/* --- BOOKING SIDEBAR (SCALED DOWN) --- */}
+            <div className="lg:col-span-4 space-y-6">
+              <Card className="bg-[#111119] border border-blue-500/10 rounded-[2rem] shadow-xl overflow-hidden">
+                <div className="h-1.5 bg-blue-600" />
+                <CardBody className="p-6 space-y-6">
+                  <div className="flex justify-between items-center">
                     <div>
-                      <p className="text-white font-semibold">{event.createdBy.name}</p>
-                      <p className="text-gray-400 text-sm">{event.createdBy.email}</p>
+                      <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest">Entry Fee</p>
+                      <h3 className="text-3xl font-black text-white">${event.price}</h3>
+                    </div>
+                    <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-blue-500">
+                      <FaTicket />
                     </div>
                   </div>
-                </CardBody>
-              </Card>
-            </div>
 
-            {/* Right Column - Booking Card */}
-            <div>
-              <Card className="bg-gradient-to-br from-blue-500/20 to-purple-500/20 backdrop-blur-md border border-blue-400/30 sticky top-24">
-                <CardBody className="p-8 space-y-6">
-                  <div>
-                    <p className="text-gray-400 text-sm">Price per ticket</p>
-                    <p className="text-4xl font-bold text-blue-400">${event.price}</p>
-                  </div>
+                  <Divider className="bg-white/5" />
 
-                  <div className="space-y-4">
-                    <p className="text-white font-semibold">Select Tickets</p>
-                    <Input
-                      type="number"
-                      min="1"
-                      max="10"
-                      value={bookingData.tickets}
-                      onChange={(e) => setBookingData({ tickets: e.target.value })}
-                      classNames={{
-                        input: "bg-white/10 text-white text-center text-lg",
-                        inputWrapper: "bg-white/10 border border-white/20",
-                      }}
-                      startContent={<FaTicket className="text-blue-400" />}
-                    />
-                  </div>
-
-                  <div className="bg-white/10 rounded-lg p-4">
-                    <p className="text-gray-400 text-sm">Total Price</p>
-                    <p className="text-3xl font-bold text-white">
-                      ${(event.price * bookingData.tickets).toFixed(2)}
-                    </p>
+                  <div className="grid grid-cols-2 gap-3">
+                     <div className="space-y-2">
+                        <p className="text-slate-500 text-[9px] font-black uppercase ml-1">Quantity</p>
+                        <Input
+                          type="number"
+                          size="sm"
+                          value={bookingData.tickets}
+                          onChange={(e) => setBookingData({ tickets: e.target.value })}
+                          classNames={{
+                            input: "text-white font-bold text-center",
+                            inputWrapper: "bg-black/40 border-white/5 rounded-xl h-12",
+                          }}
+                        />
+                     </div>
+                     <div className="space-y-2">
+                        <p className="text-slate-500 text-[9px] font-black uppercase ml-1">Total</p>
+                        <div className="h-12 flex items-center justify-center bg-blue-500/10 border border-blue-500/20 rounded-xl">
+                           <span className="text-blue-400 font-black">${(event.price * bookingData.tickets).toFixed(0)}</span>
+                        </div>
+                     </div>
                   </div>
 
                   <Button
                     fullWidth
-                    className="bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold py-3 rounded-lg hover:shadow-lg transition-all"
+                    className="h-14 bg-blue-600 text-white font-black uppercase tracking-widest rounded-xl shadow-lg border-none text-sm"
                     onClick={() => setBookingModalOpen(true)}
                     disabled={isPastEvent}
                   >
-                    {isPastEvent ? 'Event has passed' : 'Book Event'}
+                    {isPastEvent ? 'Expired' : 'Book Now'}
                   </Button>
-
-                  {!isPastEvent && (
-                    <p className="text-gray-400 text-xs text-center">
-                      Booking will be pending admin approval
-                    </p>
-                  )}
                 </CardBody>
               </Card>
+
+              {/* QUICK INFO BENTO */}
+              <div className="grid grid-cols-1 gap-3">
+                {[
+                  { icon: <FaCalendarDays />, label: 'Date', val: eventDate.toLocaleDateString(), color: 'text-blue-500' },
+                  { icon: <FaClock />, label: 'Time', val: event.time, color: 'text-purple-500' },
+                  { icon: <FaMapPin />, label: 'Venue', val: event.location, color: 'text-emerald-500' }
+                ].map((item, i) => (
+                  <div key={i} className="flex items-center gap-4 p-4 bg-[#111119] border border-white/5 rounded-xl">
+                    <div className={`${item.color} text-sm`}>{item.icon}</div>
+                    <div>
+                      <p className="text-slate-600 text-[8px] font-black uppercase tracking-widest leading-none">{item.label}</p>
+                      <p className="text-white font-bold text-[11px] mt-1">{item.val}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-        </div>
+          </section>
+        </main>
       </div>
 
-      {/* Booking Modal */}
-      <Modal isOpen={bookingModalOpen} onOpenChange={setBookingModalOpen} backdrop="blur">
-        <ModalContent className="bg-slate-900 border border-white/20">
-          <ModalHeader className="text-white">Confirm Booking</ModalHeader>
-          <ModalBody>
-            <div className="space-y-4">
-              <div className="bg-white/10 rounded-lg p-4">
-                <p className="text-gray-400 text-sm">Event</p>
-                <p className="text-white font-semibold">{event.title}</p>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-white/10 rounded-lg p-4">
-                  <p className="text-gray-400 text-sm">Tickets</p>
-                  <p className="text-white font-semibold">{bookingData.tickets}</p>
-                </div>
-                <div className="bg-white/10 rounded-lg p-4">
-                  <p className="text-gray-400 text-sm">Total</p>
-                  <p className="text-blue-400 font-semibold">
-                    ${(event.price * bookingData.tickets).toFixed(2)}
-                  </p>
-                </div>
-              </div>
-
-              {bookingError && (
-                <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-3 text-red-200 text-sm">
-                  {bookingError}
-                </div>
-              )}
-
-              {bookingSuccess && (
-                <div className="bg-green-500/20 border border-green-500/50 rounded-lg p-3 text-green-200 text-sm">
-                  {bookingSuccess}
-                </div>
-              )}
+      {/* --- CONFIRMATION MODAL --- */}
+      <Modal 
+        isOpen={bookingModalOpen} 
+        onOpenChange={setBookingModalOpen} 
+        backdrop="blur"
+        classNames={{
+            base: "bg-[#0a0a0f] border border-white/10 rounded-[2rem]",
+            header: "text-white font-black uppercase tracking-widest text-sm border-b border-white/5 px-8 py-4",
+            footer: "border-t border-white/5 px-8 py-4"
+        }}
+      >
+        <ModalContent>
+          <ModalHeader>Confirm Order</ModalHeader>
+          <ModalBody className="px-8 py-8 space-y-4">
+            <p className="text-slate-400 text-sm font-medium">You are booking tickets for:</p>
+            <p className="text-white font-black text-xl tracking-tight uppercase italic">{event.title}</p>
+            <div className="flex justify-between bg-white/5 p-4 rounded-xl border border-white/5">
+               <span className="text-slate-500 text-xs font-bold uppercase">Final Total</span>
+               <span className="text-blue-400 font-black">${(event.price * bookingData.tickets).toFixed(2)}</span>
             </div>
+            {bookingError && <p className="text-red-500 text-[10px] font-bold text-center italic">{bookingError}</p>}
           </ModalBody>
           <ModalFooter>
-            <Button
-              variant="light"
-              className="text-white"
-              onClick={() => setBookingModalOpen(false)}
-              disabled={bookingLoading}
-            >
-              Cancel
-            </Button>
-            <Button
-              className="bg-blue-600 hover:bg-blue-700 text-white"
-              onClick={handleBookEvent}
-              loading={bookingLoading}
-              disabled={bookingLoading}
-            >
-              {bookingLoading ? 'Booking...' : 'Confirm Booking'}
-            </Button>
+            <Button variant="light" className="text-slate-500 text-xs font-black uppercase" onClick={() => setBookingModalOpen(false)}>Back</Button>
+            <Button className="bg-blue-600 text-white text-xs font-black uppercase rounded-lg px-6" onClick={handleBookEvent} isLoading={bookingLoading}>Confirm</Button>
           </ModalFooter>
         </ModalContent>
       </Modal>
-
-      <Footer />
     </div>
   );
 }
