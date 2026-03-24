@@ -30,7 +30,8 @@ import {
   FaMapPin,
   FaTags
 } from 'react-icons/fa6';
-import api from '../../../../config/api';
+import api, { apiFile } from '../../../../config/api';
+import { normalizeImageUrl } from '../../../../utils/imagePath';
 
 export default function Events() {
   const [events, setEvents] = useState([]);
@@ -40,16 +41,21 @@ export default function Events() {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState('');
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     category: 'Workshop',
     date: '',
     time: '',
+    timeHour: '09',
+    timeMinute: '00',
+    timeFormat: 'AM',
     location: '',
     price: '',
     maxParticipants: '',
-    image: 'https://via.placeholder.com/500x300?text=Event+Image'
+    image: '/default-event-image.svg'
   });
 
   const categories = [
@@ -59,6 +65,18 @@ export default function Events() {
   useEffect(() => {
     fetchEvents();
   }, []);
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setSelectedFile(file);
+      const reader = new FileReader();
+      reader.onload = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const fetchEvents = async () => {
     try {
@@ -81,21 +99,72 @@ export default function Events() {
     setFormData(prev => ({ ...prev, category: e.target.value }));
   };
 
+  const handleTimeFormatChange = (e) => {
+    setFormData(prev => ({ ...prev, timeFormat: e.target.value }));
+  };
+
+  // Convert 12-hour format (with AM/PM) to 24-hour format
+  const convertTo24Hour = (hour, minute, format) => {
+    let hour24 = parseInt(hour);
+    if (format === 'AM' && hour24 === 12) {
+      hour24 = 0;
+    } else if (format === 'PM' && hour24 !== 12) {
+      hour24 += 12;
+    }
+    return `${hour24.toString().padStart(2, '0')}:${minute}`;
+  };
+
+  // Convert 24-hour format to 12-hour format with AM/PM
+  const convertTo12Hour = (time24) => {
+    const [hour, minute] = time24.split(':');
+    let hour12 = parseInt(hour);
+    const format = hour12 >= 12 ? 'PM' : 'AM';
+    if (hour12 === 0) hour12 = 12;
+    if (hour12 > 12) hour12 -= 12;
+    return {
+      hour: hour12.toString().padStart(2, '0'),
+      minute: minute,
+      format: format
+    };
+  };
+
   const resetForm = () => {
     setFormData({
-      title: '', description: '', category: 'Workshop', date: '', time: '', location: '',
-      price: '', maxParticipants: '', image: 'https://via.placeholder.com/500x300?text=Event+Image'
+      title: '', description: '', category: 'Workshop', date: '', time: '',
+      timeHour: '09', timeMinute: '00', timeFormat: 'AM',
+      location: '', price: '', maxParticipants: '', image: '/default-event-image.svg'
     });
+    setSelectedFile(null);
+    setImagePreview('');
   };
 
   const handleCreateEvent = async () => {
     setSubmitting(true);
     try {
-      const response = await api.post('/events', formData);
+      const formDataToSend = new FormData();
+      const time24 = convertTo24Hour(formData.timeHour, formData.timeMinute, formData.timeFormat);
+      
+      // Add all fields except timeHour, timeMinute, timeFormat
+      Object.keys(formData).forEach(key => {
+        if (!['timeHour', 'timeMinute', 'timeFormat'].includes(key) && formData[key]) {
+          formDataToSend.append(key, formData[key]);
+        }
+      });
+      
+      // Add converted time
+      formDataToSend.set('time', time24);
+      
+      if (selectedFile) {
+        formDataToSend.append('image', selectedFile);
+      }
+
+      const response = await apiFile.post('/events', formDataToSend);
       if (response.data.success) {
         setEvents([...events, response.data.data]);
         setCreateModalOpen(false);
         resetForm();
+        setSelectedFile(null);
+        setImagePreview('');
       }
     } catch (error) {
       console.error('Error:', error);
@@ -106,9 +175,12 @@ export default function Events() {
 
   const handleEditEvent = (event) => {
     setSelectedEvent(event);
+    const timeObj = convertTo12Hour(event.time);
     setFormData({
       title: event.title, description: event.description, category: event.category,
-      date: event.date.split('T')[0], time: event.time, location: event.location,
+      date: event.date.split('T')[0], time: event.time,
+      timeHour: timeObj.hour, timeMinute: timeObj.minute, timeFormat: timeObj.format,
+      location: event.location,
       price: event.price.toString(), maxParticipants: event.maxParticipants.toString(), image: event.image
     });
     setEditModalOpen(true);
@@ -117,11 +189,30 @@ export default function Events() {
   const handleUpdateEvent = async () => {
     setSubmitting(true);
     try {
-      const response = await api.put(`/events/${selectedEvent._id}`, formData);
+      const formDataToSend = new FormData();
+      const time24 = convertTo24Hour(formData.timeHour, formData.timeMinute, formData.timeFormat);
+      
+      // Add all fields except timeHour, timeMinute, timeFormat
+      Object.keys(formData).forEach(key => {
+        if (!['timeHour', 'timeMinute', 'timeFormat'].includes(key) && formData[key]) {
+          formDataToSend.append(key, formData[key]);
+        }
+      });
+      
+      // Add converted time
+      formDataToSend.set('time', time24);
+      
+      if (selectedFile) {
+        formDataToSend.append('image', selectedFile);
+      }
+
+      const response = await apiFile.put(`/events/${selectedEvent._id}`, formDataToSend);
       if (response.data.success) {
         setEvents(events.map(e => e._id === selectedEvent._id ? response.data.data : e));
         setEditModalOpen(false);
         resetForm();
+        setSelectedFile(null);
+        setImagePreview('');
       }
     } catch (error) {
       console.error('Error:', error);
@@ -224,7 +315,7 @@ export default function Events() {
                   <TableRow key={item._id} className="hover:bg-white/[0.02] transition-colors">
                     <TableCell>
                       <div className="flex items-center gap-4">
-                        <img src={item.image} alt="" className="w-12 h-12 rounded-xl object-cover border border-white/10" />
+                        <img src={normalizeImageUrl(item.image)} alt="" className="w-12 h-12 rounded-xl object-cover border border-white/10" />
                         <div>
                           <p className="font-bold text-sm tracking-tight">{item.title}</p>
                           <p className="text-[10px] text-slate-600 font-black uppercase tracking-tighter mt-0.5 italic">ID: {item._id.slice(-6)}</p>
@@ -303,20 +394,65 @@ export default function Events() {
             <div className="grid grid-cols-2 gap-4">
                <Input label="Event Title" name="title" value={formData.title} onChange={handleChange} classNames={inputStyles} />
                <Select label="Category" selectedKeys={[formData.category]} onChange={handleSelectChange} classNames={selectStyles}>
-                 {categories.map(cat => <SelectItem key={cat} value={cat} className="text-slate-900 font-bold">{cat}</SelectItem>)}
+                 {categories.map(cat => <SelectItem key={cat} value={cat} className="text-white font-bold bg-slate-800 hover:bg-slate-700">{cat}</SelectItem>)}
                </Select>
             </div>
             <Input label="Description" name="description" value={formData.description} onChange={handleChange} classNames={inputStyles} />
             <div className="grid grid-cols-2 gap-4">
                <Input label="Date" type="date" name="date" value={formData.date} onChange={handleChange} classNames={inputStyles} />
-               <Input label="Time" type="time" name="time" value={formData.time} onChange={handleChange} classNames={inputStyles} />
+               <div className="space-y-2">
+                 <label className="text-slate-500 font-black uppercase text-[10px] tracking-widest">Time</label>
+                 <div className="grid grid-cols-3 gap-2">
+                   <Input 
+                     placeholder="HH" 
+                     type="number" 
+                     name="timeHour" 
+                     value={formData.timeHour} 
+                     onChange={handleChange}
+                     min="01"
+                     max="12"
+                     classNames={inputStyles}
+                   />
+                   <Input 
+                     placeholder="MM" 
+                     type="number" 
+                     name="timeMinute" 
+                     value={formData.timeMinute} 
+                     onChange={handleChange}
+                     min="00"
+                     max="59"
+                     classNames={inputStyles}
+                   />
+                   <Select 
+                     selectedKeys={[formData.timeFormat]} 
+                     onChange={handleTimeFormatChange}
+                     classNames={selectStyles}
+                   >
+                     <SelectItem key="AM" value="AM" className="text-white font-bold bg-slate-800 hover:bg-slate-700">AM</SelectItem>
+                     <SelectItem key="PM" value="PM" className="text-white font-bold bg-slate-800 hover:bg-slate-700">PM</SelectItem>
+                   </Select>
+                 </div>
+               </div>
             </div>
             <Input label="Location" name="location" value={formData.location} onChange={handleChange} classNames={inputStyles} />
             <div className="grid grid-cols-2 gap-4">
                <Input label="Price" type="number" name="price" value={formData.price} onChange={handleChange} classNames={inputStyles} />
                <Input label="Capacity" type="number" name="maxParticipants" value={formData.maxParticipants} onChange={handleChange} classNames={inputStyles} />
             </div>
-            <Input label="Image Asset URL" name="image" value={formData.image} onChange={handleChange} classNames={inputStyles} />
+            <div>
+              <label className="text-slate-500 font-black uppercase text-[10px] tracking-widest">Event Image</label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="mt-2 block w-full text-sm text-white bg-white/5 border border-white/5 rounded-xl px-3 py-2 focus:border-blue-500/30 transition-all"
+              />
+              {imagePreview && (
+                <div className="mt-4">
+                  <img src={imagePreview} alt="Preview" className="max-w-full h-32 object-cover rounded-xl" />
+                </div>
+              )}
+            </div>
           </ModalBody>
           <ModalFooter>
             <Button variant="light" className="text-slate-500 font-black uppercase tracking-widest text-xs" onClick={() => { setCreateModalOpen(false); setEditModalOpen(false); }}>Cancel</Button>
@@ -340,5 +476,6 @@ const inputStyles = {
 const selectStyles = {
   trigger: "bg-white/5 border-white/5 hover:border-blue-500/30 rounded-xl transition-all",
   label: "text-slate-500 font-black uppercase text-[10px] tracking-widest",
-  value: "text-white font-bold"
+  value: "text-white font-bold",
+  popoverContent: "bg-slate-800 border border-slate-700 text-white"
 };

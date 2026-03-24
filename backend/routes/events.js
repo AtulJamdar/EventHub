@@ -8,6 +8,7 @@ const {
     getEventsByCategory
 } = require('../controllers/eventController');
 const { protect, authorize } = require('../middleware/auth');
+const upload = require('../middleware/upload');
 
 const router = express.Router();
 
@@ -17,8 +18,8 @@ router.get('/:id', getEventById);
 router.get('/category/:category', getEventsByCategory);
 
 // Protected routes (Admin Only)
-router.post('/', protect, authorize('admin'), createEvent);
-router.put('/:id', protect, authorize('admin'), updateEvent);
+router.post('/', protect, authorize('admin'), upload.single('image'), createEvent);
+router.put('/:id', protect, authorize('admin'), upload.single('image'), updateEvent);
 router.delete('/:id', protect, authorize('admin'), deleteEvent);
 
 module.exports = router;

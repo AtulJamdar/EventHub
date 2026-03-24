@@ -122,19 +122,19 @@ exports.generateBookingReport = async(req, res) => {
             .populate('userId', 'name email')
             .populate('eventId', 'title date location price category');
 
-        // Format booking data
+        // Format booking data (defensive for missing references)
         const bookingReportData = bookings.map(booking => ({
             bookingId: booking._id,
-            userName: booking.userId.name,
-            userEmail: booking.userId.email,
-            eventName: booking.eventId.title,
-            eventCategory: booking.eventId.category,
-            eventDate: booking.eventId.date,
-            location: booking.eventId.location,
-            ticketsBooked: booking.tickets,
-            pricePerTicket: booking.eventId.price,
-            totalPrice: booking.totalPrice,
-            status: booking.status,
+            userName: booking.userId?.name || 'Unknown User',
+            userEmail: booking.userId?.email || 'unknown@example.com',
+            eventName: booking.eventId?.title || 'Deleted Event',
+            eventCategory: booking.eventId?.category || 'N/A',
+            eventDate: booking.eventId?.date || booking.bookingDate,
+            location: booking.eventId?.location || 'Unknown Location',
+            ticketsBooked: booking.tickets || 0,
+            pricePerTicket: booking.eventId?.price || 0,
+            totalPrice: booking.totalPrice || 0,
+            status: booking.status || 'unknown',
             bookingDate: booking.bookingDate,
             approvedDate: booking.approvedDate
         }));
@@ -165,10 +165,12 @@ exports.generateBookingReport = async(req, res) => {
             data: bookingReportData
         });
     } catch (error) {
+        console.error('Booking report generation error', error);
         res.status(500).json({
             success: false,
             message: 'Error generating booking report',
-            error: error.message
+            error: error.message,
+            stack: error.stack
         });
     }
 };
@@ -315,6 +317,7 @@ exports.generateRevenueReport = async(req, res) => {
                 averageRevenuePerBooking: averageRevenuePerBooking.toFixed(2),
                 topCategory: revenueByCategory.length > 0 ? revenueByCategory[0].category : 'N/A'
             },
+            data: revenueByEvent,
             revenueByEvent,
             revenueByCategory,
             monthlyRevenue

@@ -13,6 +13,9 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Serve static files from uploads directory
+app.use('/uploads', express.static('uploads'));
+
 //Import routes
 const authRoutes = require('./routes/auth');
 const eventRoutes = require('./routes/events');

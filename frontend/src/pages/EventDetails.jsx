@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Button, Card, CardBody, Input, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Spinner, Divider } from '@heroui/react';
 import { FaCalendarDays, FaMapPin, FaClock, FaUsers, FaArrowLeft, FaTicket, FaCircleCheck, FaUserTie, FaShieldHeart } from 'react-icons/fa6';
 import api from '../config/api';
+import { normalizeImageUrl } from '../utils/imagePath';
 import { useAuthStore } from '../store/authStore';
 import UserSidebar from '../components/UserSidebar';
 
@@ -103,7 +104,7 @@ export default function EventDetails() {
               </div>
 
               <div className="w-full h-[320px] rounded-[2rem] overflow-hidden border border-white/5 shadow-2xl relative">
-                <img src={event.image} alt={event.title} className="w-full h-full object-cover brightness-90" />
+                <img src={normalizeImageUrl(event.image)} alt={event.title} className="w-full h-full object-cover brightness-90" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
               </div>
 

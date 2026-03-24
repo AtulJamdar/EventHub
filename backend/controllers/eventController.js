@@ -13,6 +13,12 @@ exports.createEvent = async(req, res) => {
             });
         }
 
+        // Handle image upload or URL
+        let eventImage = image || '/default-event-image.svg';
+        if (req.file) {
+            eventImage = `/uploads/${req.file.filename}`;
+        }
+
         // Create event
         const event = await Event.create({
             title,
@@ -23,7 +29,7 @@ exports.createEvent = async(req, res) => {
             location,
             price,
             maxParticipants,
-            image: image || 'https://via.placeholder.com/500x300?text=Event+Image',
+            image: eventImage,
             createdBy: req.user._id
         });
 
@@ -133,6 +139,12 @@ exports.updateEvent = async(req, res) => {
             });
         }
 
+        // Handle image upload or URL
+        let updatedImage = image || event.image;
+        if (req.file) {
+            updatedImage = `/uploads/${req.file.filename}`;
+        }
+
         // Update event
         event = await Event.findByIdAndUpdate(
             id, {
@@ -144,7 +156,7 @@ exports.updateEvent = async(req, res) => {
                 location: location || event.location,
                 price: price !== undefined ? price : event.price,
                 maxParticipants: maxParticipants || event.maxParticipants,
-                image: image || event.image
+                image: updatedImage
             }, { new: true, runValidators: true }
         ).populate('createdBy', 'name email');
 

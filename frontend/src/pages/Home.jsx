@@ -19,6 +19,8 @@ import {
   FaGithub
 } from 'react-icons/fa6';
 import api from '../config/api';
+import { normalizeImageUrl } from '../utils/imagePath';
+import hero2 from '../assets/hero2.png';
 import Navbar from '../components/Navbar';
 
 export default function Home() {
@@ -98,7 +100,7 @@ export default function Home() {
           <div className="relative max-w-4xl mx-auto group">
             <div className="relative z-10 p-3 bg-slate-900/50 rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.4)] border border-slate-800 transition-all">
                <img 
-                src="https://images.unsplash.com/photo-1551288049-bbdac8a28a1e?auto=format&fit=crop&q=80&w=1000" 
+                src={hero2} 
                 className="rounded-2xl w-full grayscale-[50%] group-hover:grayscale-0 transition-all duration-700"
                 alt="Dashboard Preview"
               />
@@ -152,7 +154,7 @@ export default function Home() {
                   onClick={() => navigate(`/events/${event._id}`)}
                 >
                   <div className="aspect-[3/4] relative">
-                    <img src={event.image} alt={event.title} className="w-full h-full object-cover brightness-[0.5] group-hover:brightness-95 transition-all duration-700" />
+                    <img src={normalizeImageUrl(event.image)} alt={event.title} className="w-full h-full object-cover brightness-[0.5] group-hover:brightness-95 transition-all duration-700" />
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent" />
                     <div className="absolute bottom-0 p-10 space-y-4 w-full">
                       <span className="bg-gradient-to-r from-blue-600 to-purple-600 text-[10px] font-black px-4 py-2 uppercase rounded-full tracking-wider">

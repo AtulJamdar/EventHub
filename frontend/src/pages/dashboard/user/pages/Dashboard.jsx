@@ -150,6 +150,7 @@ export default function Dashboard() {
                 </div>
               ) : (
                 bookings.map((booking) => (
+                  booking.eventId && (
                   <Card
                     key={booking._id}
                     isPressable
@@ -159,7 +160,7 @@ export default function Dashboard() {
                       <div className="flex items-center gap-4 min-w-0">
                         <FaTicket className="text-blue-500 flex-shrink-0" />
                         <p className="text-white font-bold truncate">
-                          {booking.eventId.title}
+                          {booking.eventId?.title || 'Event Not Available'}
                         </p>
                       </div>
 
@@ -177,6 +178,7 @@ export default function Dashboard() {
                       </div>
                     </CardBody>
                   </Card>
+                  )
                 ))
               )}
             </div>

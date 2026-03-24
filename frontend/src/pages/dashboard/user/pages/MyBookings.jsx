@@ -35,7 +35,9 @@ export default function MyBookings() {
     try {
       setLoading(true);
       const response = await api.get('/bookings/user/my-bookings');
-      setBookings(response.data.data || []);
+      // Filter out bookings with deleted events (eventId is null)
+      const validBookings = (response.data.data || []).filter(booking => booking.eventId !== null);
+      setBookings(validBookings);
     } catch (error) {
       console.error('Error fetching bookings:', error);
     } finally {
@@ -124,12 +126,13 @@ export default function MyBookings() {
                 </TableHeader>
                 <TableBody items={bookings}>
                   {(item) => (
+                    item.eventId && (
                     <TableRow key={item._id} className="hover:bg-white/[0.02] transition-colors group">
                       <TableCell>
                         <div className="min-w-[200px]">
-                          <p className="font-bold text-base group-hover:text-blue-500 transition-colors">{item.eventId.title}</p>
+                          <p className="font-bold text-base group-hover:text-blue-500 transition-colors">{item.eventId?.title || 'Event'}</p>
                           <p className="text-slate-500 text-xs mt-1 flex items-center gap-2">
-                             <FaMapPin size={10} /> {item.eventId.location}
+                             <FaMapPin size={10} /> {item.eventId?.location || 'No location'}
                           </p>
                         </div>
                       </TableCell>
@@ -137,7 +140,7 @@ export default function MyBookings() {
                         <div className="space-y-1">
                           <p className="text-xs font-bold text-slate-300 flex items-center gap-2">
                             <FaCalendarDays size={12} className="text-blue-500" />
-                            {new Date(item.eventId.date).toLocaleDateString()}
+                            {item.eventId?.date ? new Date(item.eventId.date).toLocaleDateString() : 'N/A'}
                           </p>
                           <p className="text-[10px] text-slate-500 font-black uppercase">{item.tickets} Ticket(s)</p>
                         </div>
@@ -169,6 +172,7 @@ export default function MyBookings() {
                         )}
                       </TableCell>
                     </TableRow>
+                    )
                   )}
                 </TableBody>
               </Table>

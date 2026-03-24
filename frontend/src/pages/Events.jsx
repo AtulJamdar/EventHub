@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Input, Button, Card, CardBody, Select, SelectItem, Spinner, Pagination, Divider } from '@heroui/react';
 import { FaCalendarDays, FaMapPin, FaMagnifyingGlass, FaArrowRight, FaFilter } from 'react-icons/fa6';
 import api from '../config/api';
+import { normalizeImageUrl } from '../utils/imagePath';
 import UserSidebar from '../components/UserSidebar'; // Imported UserSidebar
 
 export default function Events() {
@@ -135,7 +136,7 @@ export default function Events() {
                       {/* Event Image */}
                       <div className="relative h-44 overflow-hidden">
                         <img
-                          src={event.image}
+                          src={normalizeImageUrl(event.image)}
                           alt={event.title}
                           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 brightness-75"
                         />

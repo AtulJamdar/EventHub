@@ -44,7 +44,7 @@ const eventSchema = new mongoose.Schema({
     },
     image: {
         type: String,
-        default: 'https://via.placeholder.com/500x300?text=Event+Image'
+        default: '/default-event-image.svg'
     },
     createdBy: {
         type: mongoose.Schema.Types.ObjectId,

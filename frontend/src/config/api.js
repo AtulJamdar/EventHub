@@ -19,6 +19,20 @@ api.interceptors.request.use((config) => {
     return config;
 });
 
+// Separate instance for file uploads (no Content-Type header)
+export const apiFile = axios.create({
+    baseURL: API_BASE_URL,
+});
+
+// Add token to file requests
+apiFile.interceptors.request.use((config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+});
+
 // Handle response errors
 api.interceptors.response.use(
     (response) => response,

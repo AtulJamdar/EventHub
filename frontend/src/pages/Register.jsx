@@ -89,7 +89,7 @@ export default function Register() {
 
         <div className="relative z-10 w-full max-w-[440px] animate-fade-in">
           <Card className="bg-slate-900/40 backdrop-blur-xl border border-slate-800 rounded-3xl shadow-2xl">
-            <CardBody className="p-10 space-y-8">
+            <CardBody className="p-10 space-y-8 overflow-hidden">
               
               {/* Branding Header */}
               <div className="text-center space-y-3">
@@ -109,86 +109,98 @@ export default function Register() {
               )}
 
               <form onSubmit={handleSubmit} className="space-y-5">
-                <Input
-                  type="text"
-                  name="name"
-                  label="Full Name"
-                  placeholder="Atul Jamdar"
-                  labelPlacement="outside"
-                  value={formData.name}
-                  onChange={handleChange}
-                  classNames={{
-                    label: "text-slate-400 font-bold text-xs uppercase tracking-widest",
-                    input: "text-white font-semibold placeholder-slate-600",
-                    inputWrapper: "bg-black/20 border-slate-800 hover:border-blue-500/50 h-14 rounded-xl border-2 transition-all shadow-inner",
-                  }}
-                  isInvalid={!!errors.name}
-                  errorMessage={errors.name}
-                />
+                <div className="space-y-2">
+                  <label className="text-slate-300 font-bold text-xs uppercase tracking-widest flex items-center gap-2">
+                    <FaUser size={12} className="text-blue-500" />
+                    Full Name
+                  </label>
+                  <Input
+                    type="text"
+                    name="name"
+                    placeholder="John Doe"
+                    value={formData.name}
+                    onChange={handleChange}
+                    classNames={{
+                      input: "text-white font-semibold placeholder-slate-500 text-base",
+                      inputWrapper: "bg-gradient-to-br from-slate-800/50 to-slate-900/50 border border-slate-700 hover:border-blue-500/70 h-14 rounded-xl transition-all duration-300 shadow-lg focus-within:ring-2 focus-within:ring-blue-500/30",
+                    }}
+                    isInvalid={!!errors.name}
+                    errorMessage={errors.name}
+                  />
+                </div>
 
-                <Input
-                  type="email"
-                  name="email"
-                  label="Email"
-                  placeholder="name@company.com"
-                  labelPlacement="outside"
-                  value={formData.email}
-                  onChange={handleChange}
-                  classNames={{
-                    label: "text-slate-400 font-bold text-xs uppercase tracking-widest",
-                    input: "text-white font-semibold placeholder-slate-600",
-                    inputWrapper: "bg-black/20 border-slate-800 hover:border-blue-500/50 h-14 rounded-xl border-2 transition-all shadow-inner",
-                  }}
-                  isInvalid={!!errors.email}
-                  errorMessage={errors.email}
-                />
+                <div className="space-y-2">
+                  <label className="text-slate-300 font-bold text-xs uppercase tracking-widest flex items-center gap-2">
+                    <FaEnvelope size={12} className="text-blue-500" />
+                    Email Address
+                  </label>
+                  <Input
+                    type="email"
+                    name="email"
+                    placeholder="name@company.com"
+                    value={formData.email}
+                    onChange={handleChange}
+                    classNames={{
+                      input: "text-white font-semibold placeholder-slate-500 text-base",
+                      inputWrapper: "bg-gradient-to-br from-slate-800/50 to-slate-900/50 border border-slate-700 hover:border-blue-500/70 h-14 rounded-xl transition-all duration-300 shadow-lg focus-within:ring-2 focus-within:ring-blue-500/30",
+                    }}
+                    isInvalid={!!errors.email}
+                    errorMessage={errors.email}
+                  />
+                </div>
 
-                <Input
-                  type="password"
-                  name="password"
-                  label="Password"
-                  placeholder="••••••••"
-                  labelPlacement="outside"
-                  value={formData.password}
-                  onChange={handleChange}
-                  classNames={{
-                    label: "text-slate-400 font-bold text-xs uppercase tracking-widest",
-                    input: "text-white font-semibold placeholder-slate-600",
-                    inputWrapper: "bg-black/20 border-slate-800 hover:border-blue-500/50 h-14 rounded-xl border-2 transition-all shadow-inner",
-                  }}
-                  isInvalid={!!errors.password}
-                  errorMessage={errors.password}
-                />
+                <div className="space-y-2">
+                  <label className="text-slate-300 font-bold text-xs uppercase tracking-widest flex items-center gap-2">
+                    <FaLock size={12} className="text-blue-500" />
+                    Password
+                  </label>
+                  <Input
+                    type="password"
+                    name="password"
+                    placeholder="••••••••"
+                    value={formData.password}
+                    onChange={handleChange}
+                    classNames={{
+                      input: "text-white font-semibold placeholder-slate-500 text-base",
+                      inputWrapper: "bg-gradient-to-br from-slate-800/50 to-slate-900/50 border border-slate-700 hover:border-blue-500/70 h-14 rounded-xl transition-all duration-300 shadow-lg focus-within:ring-2 focus-within:ring-blue-500/30",
+                    }}
+                    isInvalid={!!errors.password}
+                    errorMessage={errors.password}
+                  />
+                </div>
 
-                <Input
-                  type="password"
-                  name="confirmPassword"
-                  label="Confirm Password"
-                  placeholder="••••••••"
-                  labelPlacement="outside"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  classNames={{
-                    label: "text-slate-400 font-bold text-xs uppercase tracking-widest",
-                    input: "text-white font-semibold placeholder-slate-600",
-                    inputWrapper: "bg-black/20 border-slate-800 hover:border-blue-500/50 h-14 rounded-xl border-2 transition-all shadow-inner",
-                  }}
-                  isInvalid={!!errors.confirmPassword}
-                  errorMessage={errors.confirmPassword}
-                />
+                <div className="space-y-2">
+                  <label className="text-slate-300 font-bold text-xs uppercase tracking-widest flex items-center gap-2">
+                    <FaLock size={12} className="text-blue-500" />
+                    Confirm Password
+                  </label>
+                  <Input
+                    type="password"
+                    name="confirmPassword"
+                    placeholder="••••••••"
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                    classNames={{
+                      input: "text-white font-semibold placeholder-slate-500 text-base",
+                      inputWrapper: "bg-gradient-to-br from-slate-800/50 to-slate-900/50 border border-slate-700 hover:border-blue-500/70 h-14 rounded-xl transition-all duration-300 shadow-lg focus-within:ring-2 focus-within:ring-blue-500/30",
+                    }}
+                    isInvalid={!!errors.confirmPassword}
+                    errorMessage={errors.confirmPassword}
+                  />
+                </div>
 
-                {/* Terms & Conditions Styled Checkbox */}
-                <div className="space-y-2 pt-1 px-1">
+                {/* Terms & Conditions Checkbox */}
+                <div className="space-y-2 pt-1 bg-blue-500/5 border border-blue-500/10 rounded-xl p-4 transition-all">
                   <div className="flex items-start gap-3">
                     <Checkbox
                       isSelected={agreedToTerms}
                       onValueChange={setAgreedToTerms}
                       classNames={{
-                        wrapper: "before:border-slate-700 after:bg-blue-600 rounded-md",
+                        wrapper: "before:border-slate-600 after:bg-blue-600 rounded-md mt-1 transition-all",
                       }}
                     />
-                    <p className="text-slate-500 text-xs font-bold leading-tight">
-                      I agree to the <a href="#" className="text-blue-500 hover:underline">Terms of Service</a> and <a href="#" className="text-blue-500 hover:underline">Privacy Policy</a>.
+                    <p className="text-slate-400 text-xs font-semibold leading-relaxed">
+                      I agree to the <a href="#" className="text-blue-400 hover:text-blue-300 underline transition-colors">Terms of Service</a> and <a href="#" className="text-blue-400 hover:text-blue-300 underline transition-colors">Privacy Policy</a>.
                     </p>
                   </div>
                   {errors.terms && <p className="text-red-400 text-[10px] font-black uppercase tracking-tighter pl-8">{errors.terms}</p>}
@@ -198,14 +210,19 @@ export default function Register() {
                   fullWidth
                   type="submit"
                   disabled={loading}
-                  className="bg-gradient-to-r from-blue-600 to-purple-600 text-white font-black h-14 rounded-xl text-lg shadow-xl hover:shadow-blue-500/20 transition-all hover:-translate-y-0.5"
+                  className="bg-gradient-to-r from-purple-600 via-blue-500 to-blue-600 text-white font-black h-14 rounded-xl text-lg shadow-xl hover:shadow-2xl hover:shadow-purple-500/30 transition-all duration-300 hover:-translate-y-1 active:translate-y-0 disabled:opacity-70 disabled:cursor-not-allowed"
                 >
                   {loading ? (
                     <div className="flex items-center gap-2">
                       <Spinner size="sm" color="white" />
                       <span>Creating Account...</span>
                     </div>
-                  ) : "Register"}
+                  ) : (
+                    <div className="flex items-center justify-center gap-2">
+                      <span>Create Account</span>
+                      <FaArrowRight size={16} />
+                    </div>
+                  )}
                 </Button>
               </form>
 
@@ -213,17 +230,10 @@ export default function Register() {
               <div className="space-y-6 pt-4 text-center">
                 <p className="text-slate-500 text-sm font-medium">
                   Already have an account?{' '}
-                  <Link to="/login" className="text-white font-bold hover:text-blue-400 transition-colors ml-1 border-b border-white/20">
-                    Sign in
+                  <Link to="/login" className="text-blue-400 font-bold hover:text-blue-300 transition-all duration-200 ml-1 border-b-2 border-blue-400/50 hover:border-blue-300">
+                    Sign in here
                   </Link>
                 </p>
-
-                <div className="pt-6 border-t border-slate-800/50">
-                  <div className="flex justify-center items-center gap-2 text-slate-600 text-[10px] font-black uppercase tracking-widest">
-                    <FaStar size={10} className="text-blue-500/40" />
-                    Secure registration process
-                  </div>
-                </div>
               </div>
             </CardBody>
           </Card>

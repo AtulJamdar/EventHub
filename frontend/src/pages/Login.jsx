@@ -71,7 +71,7 @@ export default function Login() {
         <div className="relative z-10 w-full max-w-[440px] animate-fade-in">
           {/* Card Wrapper */}
           <Card className="bg-slate-900/40 backdrop-blur-xl border border-slate-800 rounded-3xl shadow-2xl">
-            <CardBody className="p-10 space-y-8">
+            <CardBody className="p-10 space-y-8 overflow-hidden">
               
               {/* Branding & Header */}
               <div className="text-center space-y-3">
@@ -91,27 +91,33 @@ export default function Login() {
               )}
 
               <form onSubmit={handleSubmit} className="space-y-5">
-                <Input
-                  type="email"
-                  name="email"
-                  label="Email"
-                  placeholder="name@company.com"
-                  labelPlacement="outside"
-                  value={formData.email}
-                  onChange={handleChange}
-                  classNames={{
-                    label: "text-slate-400 font-bold text-xs uppercase tracking-widest",
-                    input: "text-white font-semibold placeholder-slate-600",
-                    inputWrapper: "bg-black/20 border-slate-800 hover:border-blue-500/50 h-14 rounded-xl border-2 transition-all shadow-inner",
-                  }}
-                  isInvalid={!!errors.email}
-                  errorMessage={errors.email}
-                />
+                <div className="space-y-2">
+                  <label className="text-slate-300 font-bold text-xs uppercase tracking-widest flex items-center gap-2">
+                    <FaEnvelope size={12} className="text-blue-500" />
+                    Email Address
+                  </label>
+                  <Input
+                    type="email"
+                    name="email"
+                    placeholder="name@company.com"
+                    value={formData.email}
+                    onChange={handleChange}
+                    classNames={{
+                      input: "text-white font-semibold placeholder-slate-500 text-base",
+                      inputWrapper: "bg-gradient-to-br from-slate-800/50 to-slate-900/50 border border-slate-700 hover:border-blue-500/70 h-14 rounded-xl transition-all duration-300 shadow-lg focus-within:ring-2 focus-within:ring-blue-500/30",
+                    }}
+                    isInvalid={!!errors.email}
+                    errorMessage={errors.email}
+                  />
+                </div>
 
                 <div className="space-y-2">
-                  <div className="flex justify-between items-center px-1">
-                    <label className="text-slate-400 font-bold text-xs uppercase tracking-widest">Password</label>
-                    <a href="#" className="text-blue-500 hover:text-blue-400 text-[10px] font-black uppercase tracking-tighter">Forgot?</a>
+                  <div className="flex justify-between items-center">
+                    <label className="text-slate-300 font-bold text-xs uppercase tracking-widest flex items-center gap-2">
+                      <FaLock size={12} className="text-blue-500" />
+                      Password
+                    </label>
+                    <a href="#" className="text-blue-400 hover:text-blue-300 text-[10px] font-black uppercase tracking-tighter transition-colors">Forgot?</a>
                   </div>
                   <Input
                     type="password"
@@ -120,26 +126,36 @@ export default function Login() {
                     value={formData.password}
                     onChange={handleChange}
                     classNames={{
-                      input: "text-white font-semibold placeholder-slate-600",
-                      inputWrapper: "bg-black/20 border-slate-800 hover:border-blue-500/50 h-14 rounded-xl border-2 transition-all shadow-inner",
+                      input: "text-white font-semibold placeholder-slate-500 text-base",
+                      inputWrapper: "bg-gradient-to-br from-slate-800/50 to-slate-900/50 border border-slate-700 hover:border-blue-500/70 h-14 rounded-xl transition-all duration-300 shadow-lg focus-within:ring-2 focus-within:ring-blue-500/30",
                     }}
                     isInvalid={!!errors.password}
                     errorMessage={errors.password}
                   />
                 </div>
 
-                <div className="flex items-center gap-3 px-1 pt-1">
-                  <input type="checkbox" className="w-4 h-4 rounded bg-slate-800 border-slate-700 text-blue-600 focus:ring-blue-500" id="remember" />
-                  <label htmlFor="remember" className="text-slate-500 text-xs font-bold cursor-pointer hover:text-slate-300 transition-colors">Remember this device</label>
+                <div className="flex items-center gap-3 pt-2">
+                  <input type="checkbox" className="w-5 h-5 rounded bg-slate-800 border-slate-700 text-blue-600 focus:ring-2 focus:ring-blue-500 cursor-pointer transition-all" id="remember" />
+                  <label htmlFor="remember" className="text-slate-400 text-xs font-bold cursor-pointer hover:text-slate-200 transition-colors">Remember this device</label>
                 </div>
 
                 <Button
                   fullWidth
                   type="submit"
                   disabled={loading}
-                  className="bg-gradient-to-r from-blue-600 to-purple-600 text-white font-black h-14 rounded-xl text-lg shadow-xl hover:shadow-blue-500/20 transition-all hover:-translate-y-0.5"
+                  className="bg-gradient-to-r from-blue-600 via-blue-500 to-purple-600 text-white font-black h-14 rounded-xl text-lg shadow-xl hover:shadow-2xl hover:shadow-blue-500/30 transition-all duration-300 hover:-translate-y-1 active:translate-y-0 disabled:opacity-70 disabled:cursor-not-allowed"
                 >
-                  {loading ? <Spinner size="sm" color="white" /> : "Sign In"}
+                  {loading ? (
+                    <div className="flex items-center gap-2">
+                      <Spinner size="sm" color="white" />
+                      <span>Signing in...</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center gap-2">
+                      <span>Sign In</span>
+                      <FaArrowRight size={16} />
+                    </div>
+                  )}
                 </Button>
               </form>
 
@@ -147,21 +163,10 @@ export default function Login() {
               <div className="space-y-6 pt-4 text-center">
                 <p className="text-slate-500 text-sm font-medium">
                   Don't have an account?{' '}
-                  <Link to="/register" className="text-white font-bold hover:text-blue-400 transition-colors ml-1 border-b border-white/20">
-                    Sign up
+                  <Link to="/register" className="text-blue-400 font-bold hover:text-blue-300 transition-all duration-200 ml-1 border-b-2 border-blue-400/50 hover:border-blue-300">
+                    Sign up here
                   </Link>
                 </p>
-
-                {/* Demo Credentials Section */}
-                <div className="pt-6 border-t border-slate-800/50">
-                   <div className="bg-blue-500/5 rounded-2xl p-4 border border-blue-500/10">
-                    <p className="text-blue-500/70 text-[9px] font-black uppercase tracking-[0.2em] mb-2 text-center">Development Access</p>
-                    <div className="grid grid-cols-1 gap-1 text-[11px] text-slate-500 font-bold">
-                      <p>User: <span className="text-slate-400">john@example.com</span></p>
-                      <p>Admin: <span className="text-slate-400">admin@example.com</span></p>
-                    </div>
-                  </div>
-                </div>
               </div>
 
             </CardBody>

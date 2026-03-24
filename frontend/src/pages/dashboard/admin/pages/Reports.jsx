@@ -13,7 +13,7 @@ import {
   TableRow, 
   TableCell, 
 } from '@heroui/react';
-import jsPDF from 'jspdf';
+import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
 import { FaFilePdf, FaPrint, FaArrowsRotate, FaFilter } from 'react-icons/fa6';
 import api from '../../../../config/api';
@@ -37,40 +37,168 @@ export default function Reports() {
     setLoading(true);
     try {
       const res = await api.get(`/reports/${type}`);
-      // Force the data to be an array. If res.data.data is missing, use empty array.
-      const result = res.data.data || res.data || [];
-      setData(Array.isArray(result) ? result : []); 
+
+      if (!res.data?.success) {
+        console.error('Report API returned non-success:', res.data);
+        setData([]);
+        return;
+      }
+
+      let result = [];
+
+      if (type === 'event' || type === 'booking') {
+        result = Array.isArray(res.data?.data) ? res.data.data : [];
+      } else if (type === 'revenue') {
+        // Revenue endpoint returns revenueByEvent / revenueByCategory / monthlyRevenue
+        if (Array.isArray(res.data?.data)) {
+          result = res.data.data;
+        } else if (Array.isArray(res.data?.revenueByEvent)) {
+          result = res.data.revenueByEvent;
+        } else if (Array.isArray(res.data?.monthlyRevenue)) {
+          result = res.data.monthlyRevenue;
+        } else if (Array.isArray(res.data?.revenueByCategory)) {
+          result = res.data.revenueByCategory;
+        }
+      }
+
+      setData(Array.isArray(result) ? result : []);
+
+      if (result.length === 0) {
+        console.warn(`Report ${type} returned no rows`, res.data);
+      }
     } catch (e) {
-      console.error('Report fetch failed:', e);
-      setData([]); // Crucial: Set to empty array on error so table doesn't crash
+      console.error('Report fetch failed:', e.response?.data || e.message || e);
+      setData([]);
     } finally {
       setLoading(false);
     }
   };
 
+  const getCellTextValue = (item, columnKey) => {
+    if (type === 'event') {
+      switch (columnKey) {
+        case 'eventName': return item?.eventName || 'N/A';
+        case 'category': return item?.category || 'N/A';
+        case 'date': return item?.date ? new Date(item.date).toLocaleDateString() : 'N/A';
+        case 'price': return `$${item?.price || 0}`;
+      }
+    }
+
+    if (type === 'booking') {
+      switch (columnKey) {
+        case 'userName': return item?.userName || 'N/A';
+        case 'eventName': return item?.eventName || 'N/A';
+        case 'status': return item?.status || 'N/A';
+        case 'totalPrice': return `$${item?.totalPrice || 0}`;
+      }
+    }
+
+    if (type === 'revenue') {
+      const bookings = item?.bookingCount || item?.bookings || 0;
+      const revenue = item?.totalRevenue || item?.revenue || 0;
+      const avg = bookings > 0 ? (revenue / bookings).toFixed(2) : '0.00';
+
+      switch (columnKey) {
+        case 'period': return item?.month || item?.eventName || item?.date || 'N/A';
+        case 'bookings': return `${bookings}`;
+        case 'revenue': return `$${Number(revenue).toLocaleString()}`;
+        case 'avg': return `$${avg}`;
+      }
+    }
+
+    return '';
+  };
+
+  const generateFallbackPDF = () => {
+    const selectedColumns = columns[type] || [];
+    if (!selectedColumns.length || !Array.isArray(data) || !data.length) {
+      alert('No report data available for PDF export.');
+      return;
+    }
+
+    const pdf = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' });
+    const margin = 40;
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const rowHeight = 22;
+
+    let y = margin;
+    pdf.setFontSize(20);
+    pdf.text(`${type.charAt(0).toUpperCase() + type.slice(1)} Report`, margin, y);
+    y += 30;
+
+    pdf.setFontSize(10);
+    const colWidth = (pageWidth - margin * 2) / selectedColumns.length;
+
+    // Header row
+    selectedColumns.forEach((col, index) => {
+      pdf.text(col.label.toString(), margin + index * colWidth + 2, y);
+    });
+    y += rowHeight;
+
+    // Data rows
+    data.forEach((item) => {
+      if (y + rowHeight > pageHeight - margin) {
+        pdf.addPage();
+        y = margin + 10;
+      }
+
+      selectedColumns.forEach((col, index) => {
+        const cellText = getCellTextValue(item, col.key);
+        pdf.text(String(cellText), margin + index * colWidth + 2, y);
+      });
+      y += rowHeight;
+    });
+
+    pdf.save(`${type || 'report'}_report.pdf`);
+  };
+
   const handleExportPDF = async () => {
     const report = document.getElementById('report-section');
-    if (!report) return;
-    const canvas = await html2canvas(report, { backgroundColor: '#111119', scale: 2 });
-    const imgData = canvas.toDataURL('image/png');
-    const pdf = new jsPDF('l', 'mm', 'a4');
-    pdf.addImage(imgData, 'PNG', 10, 10, 277, 0);
-    pdf.save(`${type}_report.pdf`);
+    if (!report) {
+      alert('Report section not available. Falling back to data export.');
+      return generateFallbackPDF();
+    }
+
+    try {
+      const canvas = await html2canvas(report, {
+        backgroundColor: '#111119',
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        ignoreElements: (el) => el.tagName === 'IFRAME',
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const imgProps = pdf.getImageProperties(imgData);
+
+      const imgWidth = pageWidth - 20;
+      const imgHeight = (imgProps.height * imgWidth) / imgProps.width;
+      pdf.addImage(imgData, 'PNG', 10, 10, imgWidth, Math.min(imgHeight, pageHeight - 20));
+      pdf.save(`${type || 'report'}_report.pdf`);
+    } catch (error) {
+      console.error('Export PDF failed:', error);
+      console.warn('Falling back to data-driven PDF export');
+      generateFallbackPDF();
+    }
   };
 
   // 1. DYNAMIC COLUMN HEADERS
   const columns = {
     event: [
-      { key: "title", label: "TITLE" },
+      { key: "eventName", label: "EVENT" },
       { key: "category", label: "CATEGORY" },
       { key: "date", label: "DATE" },
       { key: "price", label: "PRICE" }
     ],
     booking: [
-      { key: "user", label: "USER" },
-      { key: "event", label: "EVENT" },
+      { key: "userName", label: "USER" },
+      { key: "eventName", label: "EVENT" },
       { key: "status", label: "STATUS" },
-      { key: "total", label: "TOTAL" }
+      { key: "totalPrice", label: "TOTAL" }
     ],
     revenue: [
       { key: "period", label: "PERIOD" },
@@ -84,28 +212,32 @@ export default function Reports() {
   const renderCell = (item, columnKey) => {
     if (type === 'event') {
       switch (columnKey) {
-        case "title": return <span className="font-bold">{item.title}</span>;
-        case "category": return <span className="text-blue-400 text-[10px] font-black uppercase">{item.category}</span>;
-        case "date": return <span className="text-slate-400 text-xs">{new Date(item.date).toLocaleDateString()}</span>;
-        case "price": return <span className="font-black text-white">${item.price}</span>;
+        case "eventName": return <span className="font-bold">{item?.eventName || 'N/A'}</span>;
+        case "category": return <span className="text-blue-400 text-[10px] font-black uppercase">{item?.category || 'N/A'}</span>;
+        case "date": return <span className="text-slate-400 text-xs">{item?.date ? new Date(item.date).toLocaleDateString() : 'N/A'}</span>;
+        case "price": return <span className="font-black text-white">${item?.price || 0}</span>;
         default: return null;
       }
     }
     if (type === 'booking') {
       switch (columnKey) {
-        case "user": return <span className="font-bold">{item.userId?.name || 'User'}</span>;
-        case "event": return <span className="text-slate-400 text-xs">{item.eventId?.title || 'Event'}</span>;
-        case "status": return <span className="text-emerald-400 text-[9px] font-black uppercase">{item.status}</span>;
-        case "total": return <span className="font-black text-blue-400">${item.totalPrice}</span>;
+        case "userName": return <span className="font-bold">{item?.userName || 'User'}</span>;
+        case "eventName": return <span className="text-slate-400 text-xs">{item?.eventName || 'Event'}</span>;
+        case "status": return <span className="text-emerald-400 text-[9px] font-black uppercase">{item?.status || 'N/A'}</span>;
+        case "totalPrice": return <span className="font-black text-blue-400">${item?.totalPrice || 0}</span>;
         default: return null;
       }
     }
     if (type === 'revenue') {
+      const bookings = item?.bookingCount || item?.bookings || 0;
+      const revenue = item?.totalRevenue || item?.revenue || 0;
+      const avg = bookings > 0 ? revenue / bookings : 0;
+
       switch (columnKey) {
-        case "period": return <span className="font-black uppercase">{item.month || item.date}</span>;
-        case "bookings": return <span className="text-slate-400">{item.bookings || 0} Units</span>;
-        case "revenue": return <span className="font-black text-emerald-400">${item.revenue?.toLocaleString()}</span>;
-        case "avg": return <span className="text-slate-500 italic text-xs">${item.revenue ? (item.revenue / (item.bookings || 1)).toFixed(0) : 0}</span>;
+        case "period": return <span className="font-black uppercase">{item?.month || item?.eventName || item?.date || 'N/A'}</span>;
+        case "bookings": return <span className="text-slate-400">{bookings} Units</span>;
+        case "revenue": return <span className="font-black text-emerald-400">${Number(revenue).toLocaleString()}</span>;
+        case "avg": return <span className="text-slate-500 italic text-xs">${avg ? avg.toFixed(2) : 0}</span>;
         default: return null;
       }
     }
@@ -171,7 +303,7 @@ export default function Reports() {
                 td: "py-6 px-6 text-white font-medium border-b border-white/5",
               }}
             >
-              <TableHeader columns={columns[type]}>
+              <TableHeader columns={columns[type] || []}>
                 {(column) => <TableColumn key={column.key}>{column.label}</TableColumn>}
               </TableHeader>
               <TableBody 
