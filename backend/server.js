@@ -22,6 +22,7 @@ const eventRoutes = require('./routes/events');
 const bookingRoutes = require('./routes/bookings');
 const analyticsRoutes = require('./routes/analytics');
 const reportRoutes = require('./routes/reports');
+const ticketRoutes = require('./routes/tickets');
 
 // Test Route
 app.get('/api/test', (req, res) => {
@@ -38,6 +39,7 @@ app.use('/api/events', eventRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/reports', reportRoutes);
+app.use('/api/tickets', ticketRoutes);
 
 // Basic error handling middleware
 app.use((err, req, res, next) => {

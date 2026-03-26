@@ -2,6 +2,7 @@ import { Routes, Route } from 'react-router-dom';
 import UserSidebar from '../../../components/UserSidebar';
 import Dashboard from './pages/Dashboard';
 import MyBookings from './pages/MyBookings';
+import MyTickets from './pages/MyTickets';
 import BrowseEvents from './pages/BrowseEvents';
 
 export default function UserDashboard() {
@@ -14,6 +15,7 @@ export default function UserDashboard() {
             <Route path="/" element={<Dashboard />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/my-bookings" element={<MyBookings />} />
+            <Route path="/my-tickets" element={<MyTickets />} />
             <Route path="/browse-events" element={<BrowseEvents />} />
           </Routes>
         </div>

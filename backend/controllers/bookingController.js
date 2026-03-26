@@ -1,6 +1,7 @@
 const Booking = require('../models/Booking');
 const Event = require('../models/Event');
 const User = require('../models/User');
+const { generateTickets } = require('./ticketController');
 const mongoose = require('mongoose');
 
 // Create Booking (User Books an Event)
@@ -37,7 +38,7 @@ exports.createBooking = async(req, res) => {
 
         // Check if enough tickets are available
         const bookedTickets = await Booking.aggregate([
-            { $match: { eventId: mongoose.Types.ObjectId(eventId), status: 'approved' } },
+            { $match: { eventId: new mongoose.Types.ObjectId(eventId), status: 'approved' } },
             { $group: { _id: null, totalTickets: { $sum: '$tickets' } } }
         ]);
 
@@ -209,6 +210,15 @@ exports.approveBooking = async(req, res) => {
             )
             .populate('userId', 'name email')
             .populate('eventId', 'title date location price');
+
+        // Generate tickets for the booking
+        try {
+            const tickets = await generateTickets(id);
+            console.log(`Generated ${tickets.length} tickets for booking ${id}`);
+        } catch (ticketError) {
+            console.error('Error generating tickets:', ticketError);
+            // Don't fail the approval if ticket generation fails
+        }
 
         res.status(200).json({
             success: true,

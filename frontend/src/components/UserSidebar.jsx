@@ -9,7 +9,8 @@ import {
   FaXmark,
   FaRightFromBracket,
   FaChevronLeft,
-  FaChevronRight
+  FaChevronRight,
+  FaTicket
 } from 'react-icons/fa6';
 import { useAuthStore } from '../store/authStore';
 
@@ -24,6 +25,7 @@ export default function UserSidebar() {
     { icon: FaGaugeHigh, label: 'Dashboard', path: '/dashboard' },
     { icon: FaCalendarDays, label: 'Browse Events', path: '/events' },
     { icon: FaClipboardList, label: 'My Bookings', path: '/dashboard/my-bookings' },
+    { icon: FaTicket, label: 'My Tickets', path: '/dashboard/my-tickets' },
   ];
 
   const isActive = (path) => location.pathname === path;
